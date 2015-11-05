@@ -12,8 +12,18 @@ int main(int argc, char ** argv) {
 		return -1;
 	}
 	
-	send_message(lcm, "server", "Hello, World!");
-	
+	char sender[50];
+	char message[50];
+	while (1) {
+		
+		scanf("%s", sender);
+		if (strcmp(sender, "exit\0") == 0)
+			break;
+		
+		scanf("%[^\n]s\n", message);
+		send_message(lcm, sender, message);
+	}
+
 	lcm_destroy(lcm);
 	return 0;
 }
