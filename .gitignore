@@ -4,3 +4,5 @@ chat*.c
 *.class
 bin/
 *.o
+kettle
+*.gch

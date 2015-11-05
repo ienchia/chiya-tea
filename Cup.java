@@ -15,11 +15,28 @@ public class Cup implements LCMSubscriber
 	
 	@Override
 	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
-		System.out.println("");
+		try {
+			if (channel.equals("BROADCAST")) {
+				tea_t msg = new tea_t(ins);
+				System.out.println(String.format("%s: %s", msg.sender, msg.message));
+			}
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String args[])
 	{
-		System.out.println("Hello, World!");
+		try {
+			Cup cup = new Cup();
+			while (true) {
+				Thread.sleep(1000);
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (InterruptedException e) { }
 	}
 }

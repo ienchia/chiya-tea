@@ -1,16 +1,21 @@
+CC=gcc
+
+CFLAGS=`pkg-config --cflags lcm`
+LDFLAGS=`pkg-config --libs lcm`
+
 all: kettle cup
 
-kettle: kettle.o bin
-	g++ kettle.o -o bin/kettle
+kettle: kettle.o chat_tea_t.o
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-bin:	bin/
-	mkdir bin
+kettle.o: kettle.c chat_tea_t.c chat_tea_t.h
+	$(CC) $(CFLAGS) -c $^
 
-kettle.o: kettle.c chat_tea_t.c
-	g++ -c kettle.c
+chat_tea_t.o: chat_tea_t.c chat_tea_t.h
+	$(CC) $(CFLAGS) -c $^
 
-chat_tea_t.c: tea_t.lcm
-	lcm-gen -c tea_t.lcm
+chat_tea_t.c chat_tea_t.h: tea_t.lcm
+	lcm-gen -c $<
 
 cup: lcm.jar Cup.java chat
 	javac -cp .:lcm.jar Cup.java chat/*.java
@@ -19,5 +24,6 @@ chat: tea_t.lcm
 	lcm-gen -j tea_t.lcm
 
 clean:
-	rm *.o bin/* *.class
-	rm -r chat*
+	rm -f *.o *.class
+	rm -rf chat_*
+	rm -f kettle
