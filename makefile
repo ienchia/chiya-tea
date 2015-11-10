@@ -5,10 +5,10 @@ LDFLAGS=`pkg-config --libs lcm`
 
 all: kettle cup
 
-kettle: kettle.o chat_tea_t.o
+kettle: kettle.o chat_tea_t.o libjsonrpcc_la-cJSON.o libjsonrpcc_la-jsonrpc-c.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-kettle.o: kettle.c chat_tea_t.c chat_tea_t.h
+kettle.o: kettle.c chat_tea_t.c chat_tea_t.h jsonrpc-c.h cJSON.h
 	$(CC) $(CFLAGS) -c $^
 
 chat_tea_t.o: chat_tea_t.c chat_tea_t.h

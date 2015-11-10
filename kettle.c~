@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -11,16 +10,10 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <math.h>
-#include <ev.h>
-#include <float.h>
-#include <limits.h>
-#include <ctype.h>
+#include "jsonrpc-c.h"
 
 #include <lcm/lcm.h>
 #include "chat_tea_t.h"
-#include "jsonrpc-c.h"
-#include "cJSON.h"
 
 int64_t timestamp = 0;
 void send_message(lcm_t* lcm, char* sender, char* message);
@@ -29,24 +22,12 @@ void send_message(lcm_t* lcm, char* sender, char* message);
 
 struct jrpc_server my_server;
 
-cJSON * echoback(jrpc_context * ctx, cJSON * params, cJSON *id) {
-	char sender[1000] = "";
-	char message[1000] = "";
-	
-	strcpy(sender,cJSON_GetObjectItem(params,"sender")->valuestring);
-	strcpy(message,cJSON_GetObjectItem(params,"message")->valuestring);
-	
-	char result[1000] = "";
-	
-	sprintf(result,"%s : %s",sender,message);
-	
-	return cJSON_CreateString(result);
-}
-
 int main(int argc, char ** argv) {
 	
 	jrpc_server_init(&my_server, PORT);
+	jrpc_register_procedure(&my_server, say_hello, "sayHello", NULL );
 	jrpc_register_procedure(&my_server, echoback, "echoback", NULL );	
+	jrpc_register_procedure(&my_server, exit_server, "exit", NULL );	
 	jrpc_server_run(&my_server);
 	jrpc_server_destroy(&my_server);
 	return 0;
@@ -84,4 +65,16 @@ void send_message(lcm_t* lcm, char* sender, char* message) {
 	chat_tea_t_publish(lcm, "BROADCAST", &tea);
 }
 
-
+cJSON * echoback(jrpc_context * ctx, cJSON * params, cJSON *id) {
+	char sender[1000] = "";
+	char message[1000] = "";
+	
+	strcpy(sender,cJSON_GetObjectItem(params,"sender")->valuestring);
+	strcpy(message,cJSON_GetObjectItem(params,"message")->valuestring);
+	
+	char result[1000] = "";
+	
+	sprintf(result,"%s : %s",sender,message);
+	
+	return cJSON_CreateString(result);
+}
