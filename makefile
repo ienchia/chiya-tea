@@ -1,14 +1,14 @@
 CC=gcc
 
 CFLAGS=`pkg-config --cflags lcm`
-LDFLAGS=`pkg-config --libs lcm`
+LDFLAGS=`pkg-config --libs lcm` -lm -lev
 
 all: kettle cup
 
-kettle: kettle.o chat_tea_t.o libjsonrpcc_la-cJSON.o libjsonrpcc_la-jsonrpc-c.o
+kettle: kettle.o chat_tea_t.o cJSON.o jsonrpc-c.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-kettle.o: kettle.c chat_tea_t.c chat_tea_t.h jsonrpc-c.h cJSON.h
+kettle.o cJSON.o jsonrpc-c.o: kettle.c chat_tea_t.c chat_tea_t.h jsonrpc-c.h cJSON.h jsonrpc-c.c cJSON.c
 	$(CC) $(CFLAGS) -c $^
 
 chat_tea_t.o: chat_tea_t.c chat_tea_t.h
