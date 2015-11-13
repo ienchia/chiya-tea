@@ -47,6 +47,8 @@ cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
 		strcpy(result,"false");
 	}
 	else{
+		printf("Detected fire on floor %s.\n", floor_number);
+		printf("Turning on all sprinkler on floor %s.\n", floor_number);
 		strcpy(result,"true");
 		send_message(floor_number, "TURN_ON");
 	}
