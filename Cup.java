@@ -22,7 +22,7 @@ public class Cup implements LCMSubscriber
 
 		this.host = host;
 		this.floorNumber = floorNumber;
-		this.temperature = 0;
+		this.temperature = (float) 27.8;
 		this.sprinklerState = "TURN_OFF";
 	}
 
