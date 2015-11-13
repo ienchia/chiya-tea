@@ -24,23 +24,23 @@
 
 int64_t timestamp = 0;
 lcm_t* lcm;
-void send_message(char* floor_number, char* message);
+void send_message(char* sender, char* message);
 
 #define PORT 1234  // the port users will be connecting to
 
 struct jrpc_server my_server;
 
-
 cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
 	char floor_number[1000] = "";
 	char temperature[1000] = "";
-	char result[1000] = "";
+	char result[1000] = "";	
 
 	strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
 	strcpy(temperature,cJSON_GetObjectItem(params,"temperature")->valuestring);
 
+	
 	float temp;
-
+	
 	sscanf(temperature,"%f",&temp);
 
 	if(temp < 70.0f){
@@ -49,18 +49,17 @@ cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
 	else{
 		strcpy(result,"true");
 		send_message(floor_number, "TURN_ON");
-	}
-
-	printf("Received temperature %s from floor %s\n",temperature,floor_number);
-
+		printf(">>> from: %s, broadcast: %s\n", floor_number, temperature);
+	}	
+	
 	return cJSON_CreateString(result);
 }
 
-void send_message(char* floor_number, char* message) {
+void send_message(char* sender, char* message) {
 
 	chat_tea_t tea = {
 		.timestamp = timestamp++,
-		.floor_number = floor_number,
+		.sender = sender,
 		.message = message,
 	};
 
@@ -79,6 +78,18 @@ int main(int argc, char ** argv) {
 	jrpc_register_procedure(&my_server, evaluate_temperature, "evaluate_temperature", NULL );
 	jrpc_server_run(&my_server);
 	jrpc_server_destroy(&my_server);
+
+	char sender[50];
+	char message[50];
+	while (1) {
+
+		scanf("%s", sender);
+		if (strcmp(sender, "exit\0") == 0)
+			break;
+
+		scanf("%[^\n]s\n", message);
+		send_message(sender, message);
+	}
 
 	lcm_destroy(lcm);
 	return 0;
