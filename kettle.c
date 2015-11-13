@@ -24,34 +24,34 @@
 
 int64_t timestamp = 0;
 lcm_t* lcm;
-void send_message(char* sender, char* message);
+void send_message(char* floor_number, char* message);
 
 #define PORT 1234  // the port users will be connecting to
 
 struct jrpc_server my_server;
 
 cJSON * echoback(jrpc_context * ctx, cJSON * params, cJSON *id) {
-	char sender[1000] = "";
+	char floor_number[1000] = "";
 	char message[1000] = "";
 
-	strcpy(sender,cJSON_GetObjectItem(params,"sender")->valuestring);
+	strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
 	strcpy(message,cJSON_GetObjectItem(params,"message")->valuestring);
 
 	char result[1000] = "";
 
-	sprintf(result,"%s : %s",sender,message);
+	sprintf(result,"%s : %s",floor_number,message);
 
-	send_message(sender, message);
-	printf(">>> from: %s, broadcast: %s\n", sender, message);
+	send_message(floor_number, message);
+	printf(">>> from: %s, broadcast: %s\n", floor_number, message);
 
 	return cJSON_CreateString(result);
 }
 
-void send_message(char* sender, char* message) {
+void send_message(char* floor_number, char* message) {
 
 	chat_tea_t tea = {
 		.timestamp = timestamp++,
-		.sender = sender,
+		.floor_number = floor_number,
 		.message = message,
 	};
 
@@ -70,18 +70,6 @@ int main(int argc, char ** argv) {
 	jrpc_register_procedure(&my_server, echoback, "echoback", NULL );
 	jrpc_server_run(&my_server);
 	jrpc_server_destroy(&my_server);
-
-	char sender[50];
-	char message[50];
-	while (1) {
-
-		scanf("%s", sender);
-		if (strcmp(sender, "exit\0") == 0)
-			break;
-
-		scanf("%[^\n]s\n", message);
-		send_message(sender, message);
-	}
 
 	lcm_destroy(lcm);
 	return 0;

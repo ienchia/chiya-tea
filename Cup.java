@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
+import java.util.Random;
 
 import lcm.lcm.*;
 import org.json.simple.*;
@@ -9,16 +10,20 @@ import chat.*;
 public class Cup implements LCMSubscriber
 {
 	LCM lcm;
-	private String cupOwner;
-	private String ip;
+	private String floorNumber;
+	private String host;
+	private float temperature;
+	private String sprinklerState;
 
-	public Cup(String ip, String cupOwner) throws IOException
+	public Cup(String host, String floorNumber) throws IOException
 	{
 		this.lcm = new LCM();
 		this.lcm.subscribe("BROADCAST", this);
 
-		this.cupOwner = cupOwner;
-		this.ip = ip;
+		this.host = host;
+		this.floorNumber = floorNumber;
+		this.temperature = 0;
+		this.sprinklerState = "TURN_OFF";
 	}
 
 	@Override
@@ -26,7 +31,9 @@ public class Cup implements LCMSubscriber
 		try {
 			if (channel.equals("BROADCAST")) {
 				tea_t msg = new tea_t(ins);
-				System.out.printf("\r> %s: %s%n%s> ", msg.sender, msg.message, this.cupOwner);
+				if (msg.message == "TURN_ON") {
+					this.sprinklerState = "TURN_ON";
+				}
 			}
 		}
 		catch(IOException e) {
@@ -34,20 +41,25 @@ public class Cup implements LCMSubscriber
 		}
 	}
 
-	public boolean sendMessage(String message) throws IOException {
-		Socket socket = new Socket(this.ip, 1234);
+	public void addTemperature(float increment) {
+		this.temperature += increment;
+	}
+
+	public boolean reportTemperature() throws IOException {
+		Socket socket = new Socket(this.host, 1234);
 
 		DataOutputStream out = new DataOutputStream(
 			socket.getOutputStream()
 		);
 
 		JSONObject jsonParams = new JSONObject();
-		jsonParams.put("sender", this.cupOwner);
-		jsonParams.put("message", message);
+		jsonParams.put("floor_number", this.floorNumber);
+		jsonParams.put("temperature", Float.toString(this.temperature));
 
 		JSONObject jsonRequest = new JSONObject();
-		jsonRequest.put("method", "echoback");
+		jsonRequest.put("method", "evaluate_temperature");
 		jsonRequest.put("params", jsonParams);
+		System.out.println(jsonRequest);
 
 		BufferedReader in = new BufferedReader(
 			new InputStreamReader(
@@ -78,7 +90,11 @@ public class Cup implements LCMSubscriber
 			}
 		}
 
-		System.out.println("\r> message delivered!");
+		System.out.printf(
+			"SPRINKLER STATE: %s, TEMPERATURE: %s Celcius\n"
+			, this.sprinklerState
+			, this.temperature
+		);
 
 		socket.close();
 		out.close();
@@ -89,25 +105,25 @@ public class Cup implements LCMSubscriber
 
 	public static void main(String args[])
 	{
+		Random random = new Random();
 		Scanner scanner = new Scanner(System.in);
 
 		try {
-			System.out.println("Enter Kettle's IP Address: ");
-			String ip = scanner.nextLine();
-			System.out.println("Who are you? ");
-			String cupOwner = scanner.nextLine();
+			System.out.println("Enter Host IP Address: ");
+			String host = scanner.nextLine();
+			System.out.println("Which floor are you? ");
+			String floorNumber = scanner.nextLine();
 
-			Cup cup = new Cup(ip, cupOwner);
+			Cup cup = new Cup(host, floorNumber);
 			while (true) {
-				System.out.printf("%s> ", cupOwner);
-				String message = scanner.nextLine();
-				cup.sendMessage(message);
+				cup.addTemperature((random.nextFloat() - (float) 0.1) * (float) 10.0);
+				cup.reportTemperature();
 				Thread.sleep(1000);
 			}
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		catch (InterruptedException e) { }
+		catch (InterruptedException e) {}
 	}
 }

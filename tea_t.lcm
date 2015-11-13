@@ -3,6 +3,6 @@ package chat;
 struct tea_t
 {
 	int64_t	timestamp;
-	string	sender;
+	string	floor_number;
 	string	message;
 }
