@@ -48,11 +48,10 @@ cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
 	}
 	else{
 		strcpy(result,"true");
-		send_message(floor_number, "TURN_ON");		
+		send_message(floor_number, "TURN_ON");
+		printf(">>> from: %s, broadcast: %s\n", floor_number, temperature);
 	}	
 	
-	printf("Received temperature %s from floor %s\n",temperature,floor_number);
-
 	return cJSON_CreateString(result);
 }
 
