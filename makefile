@@ -18,12 +18,13 @@ chat_tea_t.c chat_tea_t.h: tea_t.lcm
 	lcm-gen -c $<
 
 cup: lcm.jar Cup.java chat
-	javac -cp .:lcm.jar Cup.java chat/*.java
+	javac -cp .:lcm.jar:json-simple-1.1.1.jar Cup.java chat/*.java
 
 chat: tea_t.lcm
 	lcm-gen -j tea_t.lcm
 
 clean:
-	rm -f *.o *.class
+	rm -f *.o *.class *.gch
 	rm -rf chat_*
 	rm -f kettle
+	rm -r chat/
