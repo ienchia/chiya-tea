@@ -28,12 +28,14 @@ public class Cup implements LCMSubscriber
 
 	@Override
 	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
+		System.out.printf("%s\n", channel);
 		try {
 			if (channel.equals("BROADCAST")) {
 				tea_t msg = new tea_t(ins);
-				if (msg.message == "TURN_ON") {
+				if (msg.message.equals("TURN_ON")) {
 					this.sprinklerState = "TURN_ON";
 				}
+				System.out.printf("received %s command%n", msg.message);
 			}
 		}
 		catch(IOException e) {
@@ -59,7 +61,6 @@ public class Cup implements LCMSubscriber
 		JSONObject jsonRequest = new JSONObject();
 		jsonRequest.put("method", "evaluate_temperature");
 		jsonRequest.put("params", jsonParams);
-		System.out.println(jsonRequest);
 
 		BufferedReader in = new BufferedReader(
 			new InputStreamReader(
@@ -103,6 +104,10 @@ public class Cup implements LCMSubscriber
 		return true;
 	}
 
+	public boolean isTurnOn() {
+		return this.sprinklerState.equals("TURN_ON");
+	}
+
 	public static void main(String args[])
 	{
 		Random random = new Random();
@@ -118,6 +123,10 @@ public class Cup implements LCMSubscriber
 			while (true) {
 				cup.addTemperature((random.nextFloat() - (float) 0.1) * (float) 10.0);
 				cup.reportTemperature();
+				if (cup.isTurnOn()) {
+					System.out.println("Sprinkler turned on, exiting report.");
+					break;
+				}
 				Thread.sleep(1000);
 			}
 		}
