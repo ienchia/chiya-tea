@@ -30,27 +30,28 @@ void send_message(char* sender, char* message);
 
 struct jrpc_server my_server;
 
-cJSON * echoback(jrpc_context * ctx, cJSON * params, cJSON *id) {
+cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
 	char floor_number[1000] = "";
 	char temperature[1000] = "";
 	char result[1000] = "";	
 
-	float temp = (float)temperature;
-	if(temperature > 70.0f){
-		result = "false";
+	strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
+	strcpy(temperature,cJSON_GetObjectItem(params,"temperature")->valuestring);
+
+	
+	float temp;
+	
+	sscanf(temperature,"%f",&temp);
+
+	if(temp < 70.0f){
+		strcpy(result,"false");
 	}
 	else{
-		result = "true";
-		
-		strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
-		strcpy(temperature,cJSON_GetObjectItem(params,"temperature")->valuestring);
-
+		strcpy(result,"true");
 		send_message(floor_number, "TURN_ON");
 		printf(">>> from: %s, broadcast: %s\n", floor_number, temperature);
 	}	
 	
-	
-
 	return cJSON_CreateString(result);
 }
 
@@ -74,7 +75,7 @@ int main(int argc, char ** argv) {
 	}
 
 	jrpc_server_init(&my_server, PORT);
-	jrpc_register_procedure(&my_server, echoback, "echoback", NULL );
+	jrpc_register_procedure(&my_server, evaluate_temperature, "evaluate_temperature", NULL );
 	jrpc_server_run(&my_server);
 	jrpc_server_destroy(&my_server);
 
