@@ -30,25 +30,27 @@ void send_message(char* sender, char* message);
 
 struct jrpc_server my_server;
 
-cJSON * evaluate_temperature(jrpc_context * ctx, cJSON * params, cJSON *id) {
+cJSON * echoback(jrpc_context * ctx, cJSON * params, cJSON *id) {
 	char floor_number[1000] = "";
 	char temperature[1000] = "";
 	char result[1000] = "";	
 
-	strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
-	strcpy(temperature,cJSON_GetObjectItem(params,"temperature")->valuestring);
-
 	float temp = (float)temperature;
-
 	if(temperature > 70.0f){
 		result = "false";
 	}
 	else{
 		result = "true";
+		
+		strcpy(floor_number,cJSON_GetObjectItem(params,"floor_number")->valuestring);
+		strcpy(temperature,cJSON_GetObjectItem(params,"temperature")->valuestring);
+
 		send_message(floor_number, "TURN_ON");
 		printf(">>> from: %s, broadcast: %s\n", floor_number, temperature);
 	}	
 	
+	
+
 	return cJSON_CreateString(result);
 }
 
